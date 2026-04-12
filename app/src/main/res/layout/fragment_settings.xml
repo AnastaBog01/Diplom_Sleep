@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/SettingsScrollView">
+
+    <LinearLayout style="@style/SettingsMainLayout">
+
+        <TextView
+            android:id="@+id/title"
+            style="@style/SettingsTitle"
+            android:text="Настройки" />
+
+        <TextView
+            style="@style/SectionHeader"
+            android:text="Интеграция с Google Fit" />
+
+        <LinearLayout style="@style/SettingsCard">
+
+            <LinearLayout style="@style/AutoSyncRow">
+                <LinearLayout style="@style/TextLayout">
+                    <TextView style="@style/SettingTitle" android:text="Подключить Google Fit" />
+                    <TextView style="@style/SettingSubtext" android:text="Нажмите для подключения" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/switchConnectFit"
+                    style="@style/SettingsSwitch" />
+            </LinearLayout>
+
+            <View style="@style/Divider" />
+
+            <LinearLayout style="@style/AutoSyncRow">
+                <LinearLayout style="@style/TextLayout">
+                    <TextView style="@style/SettingTitle" android:text="Автоматическая синхронизация" />
+                    <TextView style="@style/SettingSubtext" android:text="Включить автоматическое обновление" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/switchAutoSync"
+                    style="@style/SettingsSwitch" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            style="@style/SectionHeaderWithTopMargin"
+            android:text="Напоминания" />
+
+        <LinearLayout style="@style/SettingsCard">
+
+            <LinearLayout style="@style/ReminderRow">
+                <LinearLayout style="@style/TextLayout">
+                    <TextView style="@style/SettingTitle" android:text="Напоминание о сне" />
+                    <TextView style="@style/SettingSubtext" android:text="Установить напоминание на 22:30" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/switchSleepReminder"
+                    style="@style/SettingsSwitch" />
+            </LinearLayout>
+
+            <View style="@style/Divider" />
+
+            <LinearLayout style="@style/ReminderRowWithTopMargin">
+                <LinearLayout style="@style/TextLayout">
+                    <TextView style="@style/SettingTitle" android:text="Утренний опрос" />
+                    <TextView style="@style/SettingSubtext" android:text="Включить опрос в 08:00" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/switchMorningSurvey"
+                    style="@style/SettingsSwitch" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSave"
+            style="@style/PrimaryButton"
+            android:text="Сохранить настройки" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Sleep Tracker</string>
+    <string name="settings_title">Настройки</string>
+    <string name="google_fit_integration">Интеграция с Google Fit</string>
+    <string name="connect_google_fit">Подключить Google Fit</string>
+    <string name="connect_google_fit_hint">Нажмите для подключения</string>
+    <string name="auto_sync">Автоматическая синхронизация</string>
+    <string name="auto_sync_hint">Включить автоматическое обновление</string>
+    <string name="reminders">Напоминания</string>
+    <string name="sleep_reminder">Напоминание о сне</string>
+    <string name="sleep_reminder_hint">Установить напоминание на 22:30</string>
+    <string name="morning_survey">Утренний опрос</string>
+    <string name="morning_survey_hint">Включить опрос в 08:00</string>
+    <string name="save_settings">Сохранить настройки</string>
+    <string name="connect">Подключить</string>
+</resources>

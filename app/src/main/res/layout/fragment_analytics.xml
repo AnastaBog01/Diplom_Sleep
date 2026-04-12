@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_grey"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/title"
+            style="@style/AnalyticsTitle"
+            android:text="📊 Аналитика сна" />
+
+        <TextView
+            style="@style/ChartTitle"
+            android:text="Качество сна" />
+
+        <TextView
+            android:id="@+id/tvAverageQuality"
+            style="@style/ChartSubtitle"
+            android:text="Среднее: 7.7/10" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chartQuality"
+            style="@style/LineChartStyle" />
+
+        <TextView
+            style="@style/ChartTitle"
+            android:text="Продолжительность сна" />
+
+        <TextView
+            android:id="@+id/tvAverageDuration"
+            style="@style/ChartSubtitle"
+            android:text="Среднее: 7.7 ч" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/chartDuration"
+            style="@style/BarChartStyle" />
+
+        <TextView
+            style="@style/ChartTitle"
+            android:text="Фазы сна" />
+
+        <TextView
+            style="@style/ChartSubtitle"
+            android:text="За последнюю ночь" />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/chartPhases"
+            style="@style/PieChartStyle" />
+
+        <LinearLayout
+            style="@style/MetricsContainer">
+
+            <LinearLayout style="@style/MetricCard">
+                <TextView
+                    android:id="@+id/tvTotalTime"
+                    style="@style/MetricValue"
+                    android:text="7.2" />
+                <TextView style="@style/MetricUnit" android:text="ч" />
+                <TextView style="@style/MetricLabel" android:text="Общее время" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/MetricCard">
+                <TextView
+                    android:id="@+id/tvEfficiency"
+                    style="@style/MetricValue"
+                    android:text="90" />
+                <TextView style="@style/MetricUnit" android:text="%" />
+                <TextView style="@style/MetricLabel" android:text="Эффективность" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/MetricCard">
+                <TextView
+                    android:id="@+id/tvWakeups"
+                    style="@style/MetricValue"
+                    android:text="2" />
+                <TextView style="@style/MetricUnit" android:text="раза" />
+                <TextView style="@style/MetricLabel" android:text="Пробуждения" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tvDebugAnalytics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Лог: ожидание данных"
+            android:padding="12dp"
+            android:background="@color/white"
+            android:layout_marginTop="16dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary" />
+
+    </LinearLayout>
+</ScrollView>
