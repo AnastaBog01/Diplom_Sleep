@@ -76,14 +76,6 @@
                 <TextView style="@style/MetricLabel" android:text="Эффективность" />
             </LinearLayout>
 
-            <LinearLayout style="@style/MetricCard">
-                <TextView
-                    android:id="@+id/tvWakeups"
-                    style="@style/MetricValue"
-                    android:text="2" />
-                <TextView style="@style/MetricUnit" android:text="раза" />
-                <TextView style="@style/MetricLabel" android:text="Пробуждения" />
-            </LinearLayout>
         </LinearLayout>
         <TextView
             android:id="@+id/tvDebugAnalytics"

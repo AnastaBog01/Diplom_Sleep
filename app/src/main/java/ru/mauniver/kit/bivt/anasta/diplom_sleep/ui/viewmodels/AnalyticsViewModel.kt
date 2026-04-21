@@ -22,4 +22,11 @@ class AnalyticsViewModel(private val repository: SleepRepository) : ViewModel() 
             _records.postValue(list)
         }
     }
+
+//    fun loadRecordsForLastDays(days: Int = 7) {
+//        viewModelScope.launch {
+//            val list = repository.getAllRecords() // предполагаем, что есть такой метод
+//            _records.postValue(list)
+//        }
+//    }
 }

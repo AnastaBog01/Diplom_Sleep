@@ -14,10 +14,10 @@ import android.widget.Button
 import android.widget.Switch
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.sleeptracker.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
+//import com.google.firebase.auth.FirebaseAuth
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.receivers.NotificationReceiver
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity
 import java.util.Calendar
@@ -98,9 +98,9 @@ class SettingsFragment : Fragment() {
         }
 
         // Кнопка выхода из Google-аккаунта
-        btnSignOut.setOnClickListener {
-            signOutFromGoogle()
-        }
+//        btnSignOut.setOnClickListener {
+//            signOutFromGoogle()
+//        }
     }
 
     private fun showTimePicker(onTimeSelected: (String) -> Unit) {
@@ -250,29 +250,29 @@ class SettingsFragment : Fragment() {
         alarmManager.cancel(pendingIntent)
     }
 
-    private fun signOutFromGoogle() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .build()
-        val googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
-
-        googleSignInClient.signOut().addOnCompleteListener {
-            // Выход из Firebase
-            FirebaseAuth.getInstance().signOut()
-
-            // Сброс гостевого режима
-            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            prefs.edit().remove("guest_mode").apply()
-
-            // Очистка настроек приложения
-            val appPrefs = requireContext().getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-            appPrefs.edit().clear().apply()
-
-            // Переход на экран входа
-            val intent = Intent(requireContext(), WelcomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            activity?.finish()
-        }
-    }
+//    private fun signOutFromGoogle() {
+//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//            .requestEmail()
+//            .build()
+//        val googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
+//
+//        googleSignInClient.signOut().addOnCompleteListener {
+//            // Выход из Firebase
+//            FirebaseAuth.getInstance().signOut()
+//
+//            // Сброс гостевого режима
+//            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+//            prefs.edit().remove("guest_mode").apply()
+//
+//            // Очистка настроек приложения
+//            val appPrefs = requireContext().getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+//            appPrefs.edit().clear().apply()
+//
+//            // Переход на экран входа
+//            val intent = Intent(requireContext(), WelcomeActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//            startActivity(intent)
+//            activity?.finish()
+//        }
+//    }
 }

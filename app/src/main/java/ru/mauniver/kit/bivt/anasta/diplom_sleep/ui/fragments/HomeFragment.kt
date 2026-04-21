@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.sleeptracker.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -26,7 +27,6 @@ import com.google.android.gms.tasks.Tasks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.dialogs.AddSleepRecordDialog
 import java.util.concurrent.TimeUnit
 
@@ -177,11 +177,11 @@ class HomeFragment : Fragment() {
         val account = GoogleSignIn.getLastSignedInAccount(requireContext())
         if (account == null) {
             // Не показываем тост, если включён гостевой режим
-            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            val isGuest = prefs.getBoolean("guest_mode", false)
-            if (!isGuest) {
-                Toast.makeText(requireContext(), "Сначала войдите в Google аккаунт", Toast.LENGTH_SHORT).show()
-            }
+//            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+//            val isGuest = prefs.getBoolean("guest_mode", false)
+//            if (!isGuest) {
+//                Toast.makeText(requireContext(), "Сначала войдите в Google аккаунт", Toast.LENGTH_SHORT).show()
+//            }
             return
         }
         if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {

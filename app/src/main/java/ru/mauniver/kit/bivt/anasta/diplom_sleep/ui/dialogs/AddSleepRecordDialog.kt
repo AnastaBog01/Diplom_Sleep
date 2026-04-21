@@ -9,10 +9,10 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.example.sleeptracker.R
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
-import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication
 
 class AddSleepRecordDialog : DialogFragment() {

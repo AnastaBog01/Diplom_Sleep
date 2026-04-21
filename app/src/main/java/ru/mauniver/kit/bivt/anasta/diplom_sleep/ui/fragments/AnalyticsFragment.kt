@@ -11,13 +11,13 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.sleeptracker.R
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
-import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.data.SleepRecord
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.viewmodels.AnalyticsViewModel
@@ -35,7 +35,7 @@ class AnalyticsFragment : Fragment() {
     private lateinit var tvAverageDuration: TextView
     private lateinit var tvTotalTime: TextView
     private lateinit var tvEfficiency: TextView
-    private lateinit var tvWakeups: TextView
+//    private lateinit var tvWakeups: TextView
     private lateinit var viewModel: AnalyticsViewModel
 
     override fun onCreateView(
@@ -57,9 +57,9 @@ class AnalyticsFragment : Fragment() {
         tvAverageDuration = view.findViewById(R.id.tvAverageDuration)
         tvTotalTime = view.findViewById(R.id.tvTotalTime)
         tvEfficiency = view.findViewById(R.id.tvEfficiency)
-        tvWakeups = view.findViewById(R.id.tvWakeups)
+//        tvWakeups = view.findViewById(R.id.tvWakeups)
 
-        setupPhasesChart()
+//        setupPhasesChart()
 
         val app = requireContext().applicationContext as SleepTrackerApplication
         viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
@@ -151,6 +151,8 @@ class AnalyticsFragment : Fragment() {
                 Calendar.SATURDAY -> "Сб"
                 Calendar.SUNDAY -> "Вс"
                 else -> ""
+
+
             }
             days.add(dayOfWeek)
 
@@ -217,7 +219,34 @@ class AnalyticsFragment : Fragment() {
         val totalSleepHours = durationValues.sum()
         tvTotalTime.text = String.format("%.1f", totalSleepHours)
         tvEfficiency.text = if (totalSleepHours > 0) "85" else "0"
-        tvWakeups.text = "2"
+//        tvWakeups.text = "2"
+
+        // Вычисляем среднюю оценку самочувствия (quality)
+        val feelings = records.mapNotNull { it.quality } // quality = feeling
+        val avgFeeling = if (feelings.isNotEmpty()) feelings.average() else 0.0
+        tvEfficiency.text = if (avgFeeling > 0) String.format("%.0f", avgFeeling) else "—"
+//        tvWakeups.text = records.size.toString() // количество ночей за период
+
+        // Добавляем расчёт фаз сна для последней записи
+        val latestRecord = records.maxByOrNull { it.endTime }
+        if (latestRecord != null) {
+            val durationHours = (latestRecord.endTime - latestRecord.startTime) / (1000f * 60 * 60)
+            val phases = calculateSleepPhases(durationHours) // метод, который ты добавила
+            updatePhasesChart(phases) // обновляем круговую диаграмму
+
+            // Обновляем карточки для последнего сна
+            tvTotalTime.text = String.format("%.1f", durationHours) // часы
+            val feeling = latestRecord.quality ?: 0
+            tvEfficiency.text = feeling.toString() // оценка самочувствия (1-10)
+            val deepPercent = phases["Глубокий сон"] ?: 0f
+//            tvWakeups.text = "${deepPercent.toInt()}%" // процент глубокого сна
+        } else {
+            // Если нет записей – показываем прочерки
+            tvTotalTime.text = "—"
+            tvEfficiency.text = "—"
+//            tvWakeups.text = "—"
+            updatePhasesChart(mapOf("Глубокий сон" to 0f, "REM-сон" to 0f, "Легкий сон" to 0f))
+        }
     }
 
     private fun calculateAverageDuration(records: List<SleepRecord>): Double {
@@ -231,5 +260,44 @@ class AnalyticsFragment : Fragment() {
 
     private fun getColor(colorResId: Int): Int {
         return androidx.core.content.ContextCompat.getColor(requireContext(), colorResId)
+    }
+    private fun calculateSleepPhases(durationHours: Float): Map<String, Float> {
+        return when {
+            durationHours < 6 -> mapOf("Глубокий сон" to 15f, "REM-сон" to 15f, "Легкий сон" to 70f)
+            durationHours in 6.0..8.0 -> mapOf("Глубокий сон" to 20f, "REM-сон" to 20f, "Легкий сон" to 60f)
+            else -> mapOf("Глубокий сон" to 25f, "REM-сон" to 25f, "Легкий сон" to 50f)
+        }
+    }
+
+    private fun updatePhasesChart(phases: Map<String, Float>) {
+        val entries = phases.map { PieEntry(it.value, it.key) }
+        val colors = listOf(
+            Color.parseColor("#6750A4"),
+            Color.parseColor("#9C27B0"),
+            Color.parseColor("#CE93D8")
+        )
+        val dataSet = PieDataSet(entries, "Фазы сна").apply {
+            this.colors = colors
+            valueTextSize = 12f
+            setDrawIcons(false)
+            sliceSpace = 3f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return "${value.toInt()}%"
+                }
+            }
+        }
+        chartPhases.apply {
+            data = PieData(dataSet)
+            description.isEnabled = false
+            setUsePercentValues(true)
+            setDrawHoleEnabled(true)
+            setHoleRadius(40f)
+            setTransparentCircleRadius(45f)
+            setDrawEntryLabels(true)
+            setExtraOffsets(5f, 5f, 5f, 5f)
+            legend.isEnabled = true
+            invalidate()
+        }
     }
 }

@@ -11,7 +11,7 @@ interface SleepDao {
     @Insert
     suspend fun insert(record: SleepRecord)
 
-    @Query("SELECT * FROM sleep_records WHERE startTime >= :from AND endTime <= :to ORDER BY startTime DESC")
+    @Query("SELECT * FROM sleep_records WHERE endTime >= :from AND endTime <= :to ORDER BY startTime DESC")
     suspend fun getRecordsBetween(from: Long, to: Long): List<SleepRecord>
 
     @Query("SELECT * FROM sleep_records ORDER BY startTime DESC")
