@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
 
     <application
         android:allowBackup="true"
@@ -19,6 +21,10 @@
         android:name="ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication"
         android:supportsRtl="true"
         android:theme="@style/Theme.SleepTracker">
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name="ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity"
@@ -42,6 +48,8 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+
+        <receiver android:name="ru.mauniver.kit.bivt.anasta.diplom_sleep.receivers.NotificationReceiver" android:exported="false" />
 
     </application>
 

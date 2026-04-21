@@ -1,51 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/deep_purple"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="30dp">
+    android:background="@color/primary_purple"
+    android:clickable="true">
 
-    <TextView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:gravity="center"
-        android:text="🌙"
-        android:textSize="48sp" />
+        android:padding="24dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="Sleep Tracker"
-        android:textColor="@android:color/white"
-        android:textSize="42sp"
-        android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="😴"
+            android:textSize="80sp"
+            android:layout_marginBottom="24dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="Мониторинг качества сна"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="italic" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SleepTracker"
+            android:textSize="32sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="48dp" />
 
-    <View
-        android:layout_width="100dp"
-        android:layout_height="2dp"
-        android:layout_marginTop="50dp"
-        android:background="@android:color/white"
-        android:alpha="0.7" />
+        <!-- Кнопка входа через Google -->
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Нажмите для запуска"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:alpha="0.7" />
+        <Button
+            android:id="@+id/btnSkipLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Нет аккаунта в Google"
+            android:textColor="@color/white"
+            android:background="@android:color/transparent"
+            android:textAllCaps="false"
+            android:padding="8dp" />
 
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>

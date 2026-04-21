@@ -12,7 +12,15 @@ class SleepRepository(private val dao: SleepDao) {
         emit(dao.getRecordsBetween(from, to))
     }
 
-    fun getAllRecords(): Flow<List<SleepRecord>> = flow {
-        emit(dao.getAllRecords())
+    suspend fun getAllRecords(): List<SleepRecord> {
+        return dao.getAllRecords()
+    }
+
+    suspend fun updateRecord(record: SleepRecord) {
+        dao.update(record)
+    }
+
+    suspend fun deleteRecord(record: SleepRecord) {
+        dao.delete(record)
     }
 }

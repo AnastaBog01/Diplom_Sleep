@@ -8,8 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
-import com.example.sleeptracker.R
+//import com.example.sleeptracker.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.adapters.MainPagerAdapter
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.services.SleepTrackingService
 

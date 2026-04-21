@@ -9,7 +9,9 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -29,8 +31,13 @@ class SleepTrackingService : Service(), SensorEventListener {
     private lateinit var repository: SleepRepository
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
-    private var mediaRecorder: MediaRecorder? = null
-    private var audioFile: File? = null
+
+    // Микрофон (новый алгоритм)
+    private var micHandler: Handler? = null
+    private var consecutiveSilentCount = 0
+    private var firstSilentTime: Long? = null
+    private var isListening = false
+    private var sleepFixed = false
 
     // Для усреднения за интервал (1 минута)
     private var motionSum = 0f
@@ -43,12 +50,12 @@ class SleepTrackingService : Service(), SensorEventListener {
     private data class Sample(val motion: Float, val noise: Float, val time: Long)
     private val samples = mutableListOf<Sample>()
 
-    // Константы (можно подобрать экспериментально)
+    // Константы
     private val SAMPLE_INTERVAL_MS = 60_000L           // 1 минута
     private val SLEEP_CONSECUTIVE_COUNT = 3             // 3 тихих минуты подряд → заснул
     private val AWAKE_CONSECUTIVE_COUNT = 2             // 2 активных минуты подряд → проснулся
 
-    // Пороги (подбираются под устройство)
+    // Пороги
     private val MOTION_SLEEP_THRESHOLD = 0.3f
     private val NOISE_SLEEP_THRESHOLD = 0.1f
     private val MOTION_AWAKE_THRESHOLD = 0.5f
@@ -63,7 +70,7 @@ class SleepTrackingService : Service(), SensorEventListener {
         }
     }
 
-    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private lateinit var samplingRunnable: Runnable
 
     override fun onCreate() {
@@ -79,7 +86,8 @@ class SleepTrackingService : Service(), SensorEventListener {
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
         }
 
-        startMicrophoneMonitoring()
+        // Запускаем прослушивание для определения засыпания
+        startListeningForSleep()
 
         samplingRunnable = object : Runnable {
             override fun run() {
@@ -118,51 +126,108 @@ class SleepTrackingService : Service(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    private fun startMicrophoneMonitoring() {
-        val micHandler = android.os.Handler(android.os.Looper.getMainLooper())
-        val micRunnable = object : Runnable {
-            override fun run() {
-                measureNoiseLevel()
-                micHandler.postDelayed(this, 60_000)
-            }
-        }
-        micHandler.post(micRunnable)
+    // ==================== НОВЫЙ АЛГОРИТМ МИКРОФОНА ====================
+
+    private fun startListeningForSleep() {
+        if (sleepFixed) return // уже заснули, не слушаем
+        if (isListening) return
+        isListening = true
+        consecutiveSilentCount = 0
+        firstSilentTime = null
+        scheduleNoiseCheck()
     }
 
-    private fun measureNoiseLevel() {
-        if (mediaRecorder == null) {
-            try {
-                // Создаём временный файл в кэше приложения
-                audioFile = File(cacheDir, "temp_audio.3gp")
-                mediaRecorder = MediaRecorder().apply {
-                    setAudioSource(MediaRecorder.AudioSource.MIC)
-                    setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-                    setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-                    setOutputFile(audioFile?.absolutePath) // путь к реальному файлу
-                    prepare()
-                    start()
-                }
-            } catch (e: Exception) {
-                Log.e("SleepTracking", "Microphone init error", e)
-                return
-            }
+    private fun scheduleNoiseCheck() {
+        if (micHandler == null) {
+            micHandler = Handler(Looper.getMainLooper())
         }
-        val amplitude = mediaRecorder?.maxAmplitude?.toFloat() ?: 0f
-        val normalizedNoise = (amplitude / 32768f).coerceIn(0f, 1f)
-        noiseSum += normalizedNoise
-        noiseCount++
+        micHandler?.postDelayed({
+            performNoiseCheck()
+        }, 60_000L) // каждую минуту
+    }
+
+    private fun performNoiseCheck() {
+        if (sleepFixed) {
+            // Уже спим – больше не проверяем
+            return
+        }
+        val noise = measureNoiseOnce()
+        if (noise == null) {
+            // Ошибка – повторим через минуту
+            scheduleNoiseCheck()
+            return
+        }
+        val isSilent = noise < NOISE_SLEEP_THRESHOLD
+        if (isSilent) {
+            consecutiveSilentCount++
+            if (consecutiveSilentCount == 1) {
+                firstSilentTime = System.currentTimeMillis()
+            }
+            if (consecutiveSilentCount >= 3) {
+                // Три тихих подряд – засыпание
+                if (!isAsleep) {
+                    isAsleep = true
+                    asleepStartTime = firstSilentTime ?: System.currentTimeMillis()
+                    val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(asleepStartTime!!))
+                    Log.d("SleepTracking", "Заснул в $timeStr (по микрофону)")
+                    saveSleepStart(asleepStartTime!!)
+                    sleepFixed = true
+                    stopMicrophoneMonitoring()
+                    return
+                }
+            }
+            // Продолжаем слушать дальше
+            scheduleNoiseCheck()
+        } else {
+            // Шумно – сбрасываем счётчик
+            consecutiveSilentCount = 0
+            firstSilentTime = null
+            scheduleNoiseCheck()
+        }
     }
 
     private fun stopMicrophoneMonitoring() {
-        mediaRecorder?.apply {
-            try { stop() } catch (e: Exception) {}
-            release()
-        }
-        mediaRecorder = null
-        // Удаляем временный аудиофайл
-        audioFile?.delete()
-        audioFile = null
+        isListening = false
+        micHandler?.removeCallbacksAndMessages(null)
+        micHandler = null
+        consecutiveSilentCount = 0
+        firstSilentTime = null
+        // Если есть MediaRecorder – закрываем (хотя он уже закрыт в measureNoiseOnce)
     }
+
+    private fun measureNoiseOnce(): Float? {
+        var recorder: MediaRecorder? = null
+        var tempFile: File? = null
+        return try {
+            tempFile = File(cacheDir, "temp_audio_${System.currentTimeMillis()}.3gp")
+            recorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                setOutputFile(tempFile?.absolutePath)
+                prepare()
+                start()
+                Thread.sleep(500) // полсекунды записи
+            }
+            val amplitude = recorder?.maxAmplitude?.toFloat() ?: 0f
+            val normalized = (amplitude / 32768f).coerceIn(0f, 1f)
+            // Добавляем в общую статистику (для finishCurrentInterval)
+            noiseSum += normalized
+            noiseCount++
+            normalized
+        } catch (e: Exception) {
+            Log.e("SleepTracking", "Microphone measure error", e)
+            null
+        } finally {
+            recorder?.apply {
+                try { stop() } catch (_: Exception) {}
+                release()
+            }
+            tempFile?.delete()
+        }
+    }
+
+    // ==================== ОСТАЛЬНАЯ ЛОГИКА ====================
 
     private fun finishCurrentInterval() {
         val now = System.currentTimeMillis()
@@ -175,11 +240,9 @@ class SleepTrackingService : Service(), SensorEventListener {
             analyzeSamples()
         }
 
-        // Сохраняем отладочную информацию для UI
         val debugStr = "Движение: ${"%.2f".format(avgMotion)} | Шум: ${"%.2f".format(avgNoise)} | Спим: $isAsleep"
         getSharedPreferences("sleep_data", MODE_PRIVATE).edit().putString("debug_log", debugStr).apply()
 
-        // Сброс
         motionSum = 0f
         motionCount = 0
         noiseSum = 0f
@@ -190,7 +253,6 @@ class SleepTrackingService : Service(), SensorEventListener {
     private fun analyzeSamples() {
         if (samples.size < maxOf(SLEEP_CONSECUTIVE_COUNT, AWAKE_CONSECUTIVE_COUNT)) return
 
-        // Проверка засыпания (3 тихих подряд)
         if (!isAsleep) {
             val lastSamples = samples.takeLast(SLEEP_CONSECUTIVE_COUNT)
             val allSleep = !isScreenOn() && lastSamples.all {
@@ -205,7 +267,6 @@ class SleepTrackingService : Service(), SensorEventListener {
             }
         }
 
-        // Проверка пробуждения (2 активных подряд)
         if (isAsleep) {
             val lastSamples = samples.takeLast(AWAKE_CONSECUTIVE_COUNT)
             val allAwake = lastSamples.all {
@@ -227,7 +288,7 @@ class SleepTrackingService : Service(), SensorEventListener {
         prefs.edit()
             .putLong("sleep_start", time)
             .putString("last_sleep_start", "Заснул в $date")
-            .putString("last_event", "Заснул в $date") // для обратной совместимости
+            .putString("last_event", "Заснул в $date")
             .apply()
     }
 
@@ -239,15 +300,20 @@ class SleepTrackingService : Service(), SensorEventListener {
             CoroutineScope(Dispatchers.IO).launch {
                 repository.insertRecord(record)
             }
-            // для UI
             val startDate = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(start))
             val endDate = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(time))
             prefs.edit()
                 .putString("last_event", "Сон: $startDate – $endDate")
-                .putString("last_sleep_end", "Проснулся в $endDate")  // <--- ЭТА СТРОЧКА
+                .putString("last_sleep_end", "Проснулся в $endDate")
                 .apply()
         }
         prefs.edit().remove("sleep_start").apply()
+
+        // После пробуждения перезапускаем микрофон для следующего цикла
+        if (!isAsleep) {
+            sleepFixed = false
+            startListeningForSleep()
+        }
     }
 
     private fun createNotification(): Notification {
@@ -271,6 +337,15 @@ class SleepTrackingService : Service(), SensorEventListener {
             .build()
     }
 
+    private fun isScreenOn(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            powerManager.isInteractive
+        } else {
+            powerManager.isScreenOn
+        }
+    }
+
     companion object {
         private const val NOTIFICATION_ID = 1001
         fun start(context: Context) {
@@ -285,14 +360,6 @@ class SleepTrackingService : Service(), SensorEventListener {
         fun stop(context: Context) {
             val intent = Intent(context, SleepTrackingService::class.java)
             context.stopService(intent)
-        }
-    }
-    private fun isScreenOn(): Boolean {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            powerManager.isInteractive
-        } else {
-            powerManager.isScreenOn
         }
     }
 }

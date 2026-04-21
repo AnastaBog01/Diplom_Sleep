@@ -7,8 +7,9 @@ import androidx.room.PrimaryKey
 data class SleepRecord(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val startTime: Long,      // время засыпания в миллисекундах (System.currentTimeMillis())
-    val endTime: Long,        // время пробуждения в миллисекундах
-    val quality: Int? = null, // качество сна от 1 до 10 (из утреннего опроса)
-    val notes: String? = null // заметки пользователя
+    val startTime: Long,  // время засыпания в миллисекундах
+    val endTime: Long,  // время пробуждения в миллисекундах
+    val quality: Int? = null,   // качество сна от 1 до 10 (из утреннего опроса)
+    val notes: String? = null,   // заметки пользователя
+    val factors: String? = null,   // храним через запятую
 )

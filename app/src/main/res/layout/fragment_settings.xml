@@ -44,33 +44,92 @@
 
         <LinearLayout style="@style/SettingsCard">
 
+            <!-- Напоминание о сне -->
             <LinearLayout style="@style/ReminderRow">
                 <LinearLayout style="@style/TextLayout">
                     <TextView style="@style/SettingTitle" android:text="Напоминание о сне" />
-                    <TextView style="@style/SettingSubtext" android:text="Установить напоминание на 22:30" />
+                    <TextView style="@style/SettingSubtext" android:text="Установить напоминание" />
                 </LinearLayout>
                 <Switch
                     android:id="@+id/switchSleepReminder"
                     style="@style/SettingsSwitch" />
             </LinearLayout>
 
+            <!-- Выбор времени для напоминания о сне -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Время напоминания"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary" />
+                <Button
+                    android:id="@+id/btnSleepReminderTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="22:30"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/primary_purple" />
+            </LinearLayout>
+
             <View style="@style/Divider" />
 
+            <!-- Утренний опрос -->
             <LinearLayout style="@style/ReminderRowWithTopMargin">
                 <LinearLayout style="@style/TextLayout">
                     <TextView style="@style/SettingTitle" android:text="Утренний опрос" />
-                    <TextView style="@style/SettingSubtext" android:text="Включить опрос в 08:00" />
+                    <TextView style="@style/SettingSubtext" android:text="Включить опрос" />
                 </LinearLayout>
                 <Switch
                     android:id="@+id/switchMorningSurvey"
                     style="@style/SettingsSwitch" />
             </LinearLayout>
+
+            <!-- Выбор времени для утреннего опроса -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Время опроса"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary" />
+                <Button
+                    android:id="@+id/btnMorningSurveyTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="08:00"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/primary_purple" />
+            </LinearLayout>
+
         </LinearLayout>
 
         <Button
             android:id="@+id/btnSave"
             style="@style/PrimaryButton"
             android:text="Сохранить настройки" />
+
+        <Button
+            android:id="@+id/btnSignOut"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Выйти из аккаунта"
+            android:layout_marginTop="16dp"
+            android:background="@color/divider_color"
+            android:textColor="@color/text_primary"
+            style="@style/PrimaryButton" />
 
     </LinearLayout>
 </ScrollView>
