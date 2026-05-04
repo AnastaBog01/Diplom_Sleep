@@ -25,6 +25,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 val channelName = when (channelId) {
                     "sleep_reminder" -> "Напоминания о сне"
                     "morning_survey" -> "Утренний опрос"
+                    "recommendation" -> "Рекомендации по сну"
                     else -> "Уведомления"
                 }
                 val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH).apply {

@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sleeptracker.R
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import kotlinx.coroutines.launch
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.data.SleepRecord

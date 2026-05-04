@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" >
+    xmlns:tools="http://schemas.android.com/tools"
+    package="ru.mauniver.kit.bivt.anasta.diplom_sleep">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -12,7 +13,14 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -22,9 +30,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SleepTracker">
 
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name="ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity"
@@ -50,6 +55,7 @@
             android:foregroundServiceType="microphone" />
 
         <receiver android:name="ru.mauniver.kit.bivt.anasta.diplom_sleep.receivers.NotificationReceiver" android:exported="false" />
+
 
     </application>
 

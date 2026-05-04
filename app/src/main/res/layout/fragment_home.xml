@@ -40,81 +40,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="20dp"
+                android:padding="12dp"
                 android:weightSum="4">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/tvSleepDuration"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="7.5 ч"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#1A1A1A" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Сон"
-                        android:textSize="12sp"
-                        android:textColor="#757575" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/tvSleepQuality"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="8.2"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#1A1A1A" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Качество"
-                        android:textSize="12sp"
-                        android:textColor="#757575" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/tvSleepEfficiency"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="85%"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#1A1A1A" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Эффектив."
-                        android:textSize="12sp"
-                        android:textColor="#757575" />
-                </LinearLayout>
-
+                <!-- Засыпание -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -126,8 +55,8 @@
                         android:id="@+id/tvBedtime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="22:30"
-                        android:textSize="18sp"
+                        android:text="—"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="#1A1A1A" />
 
@@ -135,7 +64,82 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Засыпание"
-                        android:textSize="12sp"
+                        android:textSize="10sp"
+                        android:textColor="#757575" />
+                </LinearLayout>
+
+                <!-- Пробуждение -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvWakeTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Пробуждение"
+                        android:textSize="10sp"
+                        android:textColor="#757575" />
+                </LinearLayout>
+
+                <!-- Длительность -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvSleepDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Длительность"
+                        android:textSize="10sp"
+                        android:textColor="#757575" />
+                </LinearLayout>
+
+                <!-- Эффективность -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvSleepEfficiency"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Эффективность"
+                        android:textSize="10sp"
                         android:textColor="#757575" />
                 </LinearLayout>
 
@@ -186,57 +190,57 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="Анализ недели (?)"
+                        android:text="Анализ недели"
                         android:gravity="center"
                         android:textSize="14sp"
                         android:textColor="#1A1A1A" />
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal">-->
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cardSleepGoals"
-                    android:layout_width="0dp"
-                    android:layout_height="80dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp">
+<!--                <androidx.cardview.widget.CardView-->
+<!--                    android:id="@+id/cardSleepGoals"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="80dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:layout_marginEnd="8dp"-->
+<!--                    app:cardCornerRadius="12dp"-->
+<!--                    app:cardElevation="2dp">-->
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="В разработке"
-                        android:gravity="center"
-                        android:textSize="14sp"
-                        android:textColor="#1A1A1A" />
-                </androidx.cardview.widget.CardView>
+<!--                    <TextView-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="match_parent"-->
+<!--                        android:text="В разработке"-->
+<!--                        android:gravity="center"-->
+<!--                        android:textSize="14sp"-->
+<!--                        android:textColor="#1A1A1A" />-->
+<!--                </androidx.cardview.widget.CardView>-->
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cardReport"
-                    android:layout_width="0dp"
-                    android:layout_height="80dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp">
+<!--                <androidx.cardview.widget.CardView-->
+<!--                    android:id="@+id/cardReport"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="80dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:layout_marginStart="8dp"-->
+<!--                    app:cardCornerRadius="12dp"-->
+<!--                    app:cardElevation="2dp">-->
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="В разработке"
-                        android:gravity="center"
-                        android:textSize="14sp"
-                        android:textColor="#1A1A1A" />
-                </androidx.cardview.widget.CardView>
-            </LinearLayout>
+<!--                    <TextView-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="match_parent"-->
+<!--                        android:text="В разработке"-->
+<!--                        android:gravity="center"-->
+<!--                        android:textSize="14sp"-->
+<!--                        android:textColor="#1A1A1A" />-->
+<!--                </androidx.cardview.widget.CardView>-->
+<!--            </LinearLayout>-->
         </LinearLayout>
 
-        <!-- Google Fit карточка -->
+        <!-- Health Connect карточка (только текст + кнопка) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -253,80 +257,25 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Google Fit"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
                     android:textColor="#4CAF50"
-                    android:layout_marginBottom="4dp" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Синхронизировано"
+                    android:text="Синхронизируйте данные о сне и активности"
                     android:textSize="14sp"
                     android:textColor="#757575"
                     android:layout_marginBottom="16dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <TextView
-                            android:id="@+id/tvSteps"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="—"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="#1A1A1A" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Шаги сегодня"
-                            android:textSize="12sp"
-                            android:textColor="#757575" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <TextView
-                            android:id="@+id/tvActivity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="—"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="#1A1A1A" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Активность"
-                            android:textSize="12sp"
-                            android:textColor="#757575" />
-                    </LinearLayout>
-                </LinearLayout>
 
                 <Button
                     android:id="@+id/btnSyncData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Синхронизировать данные"
+                    android:text="Синхронизировать"
                     android:textSize="14sp"
                     android:textColor="#FFFFFF"
                     android:backgroundTint="#4CAF50"
@@ -350,7 +299,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
-            android:layout_marginBottom="80dp">
+            android:layout_marginBottom="16dp">
 
             <LinearLayout
                 android:id="@+id/llRecommendations"
@@ -361,31 +310,35 @@
 
         </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:id="@+id/tvSleepStart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Заснул: —"
-            android:padding="12dp"/>
+        <!-- Логи сна -->
+<!--        <TextView-->
+<!--            android:id="@+id/tvSleepStart"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Заснул: —"-->
+<!--            android:padding="12dp"-->
+<!--            android:textSize="14sp"/>-->
 
-        <TextView
-            android:id="@+id/tvSleepEnd"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Проснулся: —"
-            android:padding="12dp" />
+<!--        <TextView-->
+<!--            android:id="@+id/tvSleepEnd"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Проснулся: —"-->
+<!--            android:padding="12dp"-->
+<!--            android:textSize="14sp"/>-->
 
-        <TextView
-            android:id="@+id/tvDebugLog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ожидание данных..."
-            android:padding="12dp"
-            android:background="@color/white"
-            android:elevation="2dp"
-            android:layout_marginTop="8dp"
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary" />
+<!--        <TextView-->
+<!--            android:id="@+id/tvDebugLog"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Ожидание данных..."-->
+<!--            android:padding="12dp"-->
+<!--            android:background="@android:color/white"-->
+<!--            android:elevation="2dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:textSize="12sp"-->
+<!--            android:textColor="#757575" />-->
+
 
     </LinearLayout>
 </ScrollView>

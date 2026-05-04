@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.sleeptracker.R
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
@@ -30,12 +30,13 @@ class AnalyticsFragment : Fragment() {
     private lateinit var chartQuality: LineChart
     private lateinit var chartDuration: BarChart
     private lateinit var chartPhases: PieChart
-    private lateinit var tvDebugAnalytics: TextView
+//    private lateinit var tvDebugAnalytics: TextView
     private lateinit var tvAverageQuality: TextView
     private lateinit var tvAverageDuration: TextView
     private lateinit var tvTotalTime: TextView
     private lateinit var tvEfficiency: TextView
-//    private lateinit var tvWakeups: TextView
+
+    //    private lateinit var tvWakeups: TextView
     private lateinit var viewModel: AnalyticsViewModel
 
     override fun onCreateView(
@@ -52,7 +53,7 @@ class AnalyticsFragment : Fragment() {
         chartQuality = view.findViewById(R.id.chartQuality)
         chartDuration = view.findViewById(R.id.chartDuration)
         chartPhases = view.findViewById(R.id.chartPhases)
-        tvDebugAnalytics = view.findViewById(R.id.tvDebugAnalytics)
+//        tvDebugAnalytics = view.findViewById(R.id.tvDebugAnalytics)
         tvAverageQuality = view.findViewById(R.id.tvAverageQuality)
         tvAverageDuration = view.findViewById(R.id.tvAverageDuration)
         tvTotalTime = view.findViewById(R.id.tvTotalTime)
@@ -76,7 +77,15 @@ class AnalyticsFragment : Fragment() {
                     // Сортируем от новых к старым
                     val sorted = records.sortedByDescending { it.startTime }
                     val latest = sorted.first()
-                    appendLine("Последняя: ${sdf.format(Date(latest.startTime))} - ${sdf.format(Date(latest.endTime))}")
+                    appendLine(
+                        "Последняя: ${sdf.format(Date(latest.startTime))} - ${
+                            sdf.format(
+                                Date(
+                                    latest.endTime
+                                )
+                            )
+                        }"
+                    )
                     // Добавляем список уникальных дат (по времени засыпания или пробуждения)
                     val dates = records.map { sdf.format(Date(it.startTime)) }.distinct()
                     appendLine("Даты записей: ${dates.joinToString()}")
@@ -85,15 +94,23 @@ class AnalyticsFragment : Fragment() {
                     val dates1 = records.map { sdfDate.format(Date(it.endTime)) }.distinct()
                     appendLine("Даты записей (UTC): ${dates1.joinToString()}")
                 }
-                appendLine("Средняя продолжительность за неделю: ${String.format("%.1f", calculateAverageDuration(records))} ч")
+                appendLine(
+                    "Средняя продолжительность за неделю: ${
+                        String.format(
+                            "%.1f",
+                            calculateAverageDuration(records)
+                        )
+                    } ч"
+                )
             }
-            tvDebugAnalytics.text = debugText
+//            tvDebugAnalytics.text = debugText
 
             if (records.isNotEmpty()) {
                 updateChartsWithRealData(records)
             }
         }
-        viewModel.loadRecordsForLastDays()
+        viewModel.loadAllRecords()
+//        viewModel.loadRecordsForLastDays()
     }
 
     private fun setupPhasesChart() {
@@ -132,16 +149,15 @@ class AnalyticsFragment : Fragment() {
     }
 
     private fun updateChartsWithRealData(records: List<SleepRecord>) {
-        // Используем UTC календарь
-        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val utcCalendar = Calendar.getInstance()   // локальный часовой пояс
         val days = mutableListOf<String>()
         val durationValues = mutableListOf<Float>()
+        val qualityValues = mutableListOf<Float>()
 
         for (i in 6 downTo 0) {
             utcCalendar.time = Date()
             utcCalendar.add(Calendar.DAY_OF_YEAR, -i)
 
-            // Название дня недели (можно оставить как есть)
             val dayOfWeek = when (utcCalendar.get(Calendar.DAY_OF_WEEK)) {
                 Calendar.MONDAY -> "Пн"
                 Calendar.TUESDAY -> "Вт"
@@ -151,33 +167,42 @@ class AnalyticsFragment : Fragment() {
                 Calendar.SATURDAY -> "Сб"
                 Calendar.SUNDAY -> "Вс"
                 else -> ""
-
-
             }
             days.add(dayOfWeek)
 
-            // Начало дня в UTC (00:00:00)
             utcCalendar.set(Calendar.HOUR_OF_DAY, 0)
             utcCalendar.set(Calendar.MINUTE, 0)
             utcCalendar.set(Calendar.SECOND, 0)
             utcCalendar.set(Calendar.MILLISECOND, 0)
-            val startOfDay = utcCalendar.timeInMillis
-
-            // Конец дня (23:59:59.999)
+            val startOfDay = utcCalendar.timeInMillis - 24*60*60*1000L
             utcCalendar.add(Calendar.DAY_OF_YEAR, 1)
-            val endOfDay = utcCalendar.timeInMillis - 1
-            utcCalendar.add(Calendar.DAY_OF_YEAR, -1) // вернули обратно
+            val endOfDay = utcCalendar.timeInMillis + 24*60*60*1000L
+            utcCalendar.add(Calendar.DAY_OF_YEAR, -1)
 
             val recordsForDay = records.filter { it.endTime in startOfDay..endOfDay }
+
+            Log.d("Analytics", "День $dayOfWeek: startOfDay=$startOfDay, endOfDay=$endOfDay")
+            for (record in recordsForDay) {
+                Log.d("Analytics", "Запись: endTime=${record.endTime}, quality=${record.quality}")
+            }
+            // Продолжительность (столбчатый график)
             var totalHours = 0f
             for (record in recordsForDay) {
                 totalHours += (record.endTime - record.startTime) / (1000f * 60 * 60)
             }
             durationValues.add(totalHours)
-        }
 
-        // Столбчатый график
-        val barEntries = durationValues.mapIndexed { index, value -> BarEntry(index.toFloat(), value) }
+            // Качество (линейный график) – среднее за день
+            val avgQuality = recordsForDay.mapNotNull { it.quality?.toFloat() }.average().toFloat()
+            val finalQuality = if (avgQuality.isNaN()) 0f else avgQuality
+            qualityValues.add(finalQuality)
+            Log.d("Analytics", "День $dayOfWeek: качество=$finalQuality")
+        }
+        Log.d("Analytics", "Все qualityValues: $qualityValues")
+
+        // Столбчатый график (продолжительность)
+        val barEntries =
+            durationValues.mapIndexed { index, value -> BarEntry(index.toFloat(), value) }
         val barDataSet = BarDataSet(barEntries, "Продолжительность сна (ч)").apply {
             color = getColor(R.color.chart_purple)
             valueTextSize = 10f
@@ -191,9 +216,9 @@ class AnalyticsFragment : Fragment() {
             invalidate()
         }
 
-        // Линейный график
-        val lineEntries = durationValues.mapIndexed { index, value -> Entry(index.toFloat(), value) }
-        val lineDataSet = LineDataSet(lineEntries, "Продолжительность сна (ч)").apply {
+        // Линейный график (качество сна)
+        val lineEntries = qualityValues.mapIndexed { index, value -> Entry(index.toFloat(), value) }
+        val lineDataSet = LineDataSet(lineEntries, "Качество сна (1-10)").apply {
             color = getColor(R.color.chart_purple)
             setCircleColor(getColor(R.color.chart_purple))
             lineWidth = 2f
@@ -208,46 +233,41 @@ class AnalyticsFragment : Fragment() {
             data = LineData(lineDataSet)
             xAxis.valueFormatter = IndexAxisValueFormatter(days)
             axisLeft.axisMinimum = 0f
-            axisLeft.axisMaximum = (durationValues.maxOrNull() ?: 8f) + 1f
+            axisLeft.axisMaximum = 10f
             invalidate()
         }
 
+        // Средние значения
         val avgDuration = if (durationValues.isNotEmpty()) durationValues.average() else 0.0
         tvAverageDuration.text = "Среднее: ${String.format("%.1f", avgDuration)} ч"
-        tvAverageQuality.text = "Среднее: ${String.format("%.1f", avgDuration)}/10"
+        val avgQualityFromChart = if (qualityValues.isNotEmpty()) qualityValues.average() else 0.0
+        tvAverageQuality.text = "Среднее: ${String.format("%.1f", avgQualityFromChart)}/10"
 
         val totalSleepHours = durationValues.sum()
         tvTotalTime.text = String.format("%.1f", totalSleepHours)
-        tvEfficiency.text = if (totalSleepHours > 0) "85" else "0"
-//        tvWakeups.text = "2"
-
-        // Вычисляем среднюю оценку самочувствия (quality)
-        val feelings = records.mapNotNull { it.quality } // quality = feeling
-        val avgFeeling = if (feelings.isNotEmpty()) feelings.average() else 0.0
-        tvEfficiency.text = if (avgFeeling > 0) String.format("%.0f", avgFeeling) else "—"
-//        tvWakeups.text = records.size.toString() // количество ночей за период
-
-        // Добавляем расчёт фаз сна для последней записи
+        tvEfficiency.text =
+            if (avgQualityFromChart > 0) String.format("%.0f", avgQualityFromChart) else "—"
+        // Данные для последней ночи
         val latestRecord = records.maxByOrNull { it.endTime }
         if (latestRecord != null) {
             val durationHours = (latestRecord.endTime - latestRecord.startTime) / (1000f * 60 * 60)
-            val phases = calculateSleepPhases(durationHours) // метод, который ты добавила
-            updatePhasesChart(phases) // обновляем круговую диаграмму
+            tvTotalTime.text = String.format("%.1f ч", durationHours)
 
-            // Обновляем карточки для последнего сна
-            tvTotalTime.text = String.format("%.1f", durationHours) // часы
-            val feeling = latestRecord.quality ?: 0
-            tvEfficiency.text = feeling.toString() // оценка самочувствия (1-10)
-            val deepPercent = phases["Глубокий сон"] ?: 0f
-//            tvWakeups.text = "${deepPercent.toInt()}%" // процент глубокого сна
+            // Эффективность: продолжительность / 8 * 100
+            val efficiency = (durationHours / 8f * 100f).toInt().coerceIn(0, 100)
+            tvEfficiency.text = "$efficiency%"
+
+            // Фазы сна для последней ночи
+            val phases = calculateSleepPhases(durationHours)
+            updatePhasesChart(phases)
         } else {
-            // Если нет записей – показываем прочерки
             tvTotalTime.text = "—"
             tvEfficiency.text = "—"
-//            tvWakeups.text = "—"
             updatePhasesChart(mapOf("Глубокий сон" to 0f, "REM-сон" to 0f, "Легкий сон" to 0f))
         }
+//        tvWakeups.text = records.size.toString()
     }
+
 
     private fun calculateAverageDuration(records: List<SleepRecord>): Double {
         if (records.isEmpty()) return 0.0
@@ -270,6 +290,7 @@ class AnalyticsFragment : Fragment() {
     }
 
     private fun updatePhasesChart(phases: Map<String, Float>) {
+
         val entries = phases.map { PieEntry(it.value, it.key) }
         val colors = listOf(
             Color.parseColor("#6750A4"),
@@ -279,6 +300,7 @@ class AnalyticsFragment : Fragment() {
         val dataSet = PieDataSet(entries, "Фазы сна").apply {
             this.colors = colors
             valueTextSize = 12f
+            valueTextColor = Color.WHITE
             setDrawIcons(false)
             sliceSpace = 3f
             valueFormatter = object : ValueFormatter() {
@@ -287,6 +309,7 @@ class AnalyticsFragment : Fragment() {
                 }
             }
         }
+
         chartPhases.apply {
             data = PieData(dataSet)
             description.isEnabled = false
@@ -294,7 +317,7 @@ class AnalyticsFragment : Fragment() {
             setDrawHoleEnabled(true)
             setHoleRadius(40f)
             setTransparentCircleRadius(45f)
-            setDrawEntryLabels(true)
+            setDrawEntryLabels(false) // убираем подписи с диаграммы, оставляем легенду
             setExtraOffsets(5f, 5f, 5f, 5f)
             legend.isEnabled = true
             invalidate()

@@ -9,11 +9,12 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.example.sleeptracker.R
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.data.SleepRecord
 
 class AddSleepRecordDialog : DialogFragment() {
 
@@ -65,7 +66,15 @@ class AddSleepRecordDialog : DialogFragment() {
             val allRecords = app.repository.getAllRecords()
             val targetRecord = allRecords.find { it.quality == null || it.factors == null }
             if (targetRecord == null) {
-                Toast.makeText(requireContext(), "Нет незаполненных записей о сне", Toast.LENGTH_SHORT).show()
+                val now = System.currentTimeMillis()
+                val newRecord = SleepRecord(
+                    startTime = now - 8 * 60 * 60 * 1000L, // пример: сон 8 часов назад
+                    endTime = now,
+                    quality = quality,
+                    factors = selectedFactors.ifEmpty { null }
+                )
+                app.repository.insertRecord(newRecord)
+                Toast.makeText(requireContext(), "Создана новая запись", Toast.LENGTH_SHORT).show()
                 dismiss()
                 return@launch
             }
@@ -77,8 +86,11 @@ class AddSleepRecordDialog : DialogFragment() {
             app.repository.updateRecord(updatedRecord) // нужен метод update в репозитории
             Toast.makeText(requireContext(), "Запись обновлена", Toast.LENGTH_SHORT).show()
             dismiss()
+
         }
+
     }
+
     companion object {
         fun newInstance() = AddSleepRecordDialog()
     }

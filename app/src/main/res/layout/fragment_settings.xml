@@ -9,34 +9,34 @@
             style="@style/SettingsTitle"
             android:text="Настройки" />
 
-        <TextView
-            style="@style/SectionHeader"
-            android:text="Интеграция с Google Fit" />
+<!--        <TextView-->
+<!--            style="@style/SectionHeader"-->
+<!--            android:text="Интеграция с Google Fit" />-->
 
-        <LinearLayout style="@style/SettingsCard">
+<!--        <LinearLayout style="@style/SettingsCard">-->
 
-            <LinearLayout style="@style/AutoSyncRow">
-                <LinearLayout style="@style/TextLayout">
-                    <TextView style="@style/SettingTitle" android:text="Подключить Google Fit" />
-                    <TextView style="@style/SettingSubtext" android:text="Нажмите для подключения" />
-                </LinearLayout>
-                <Switch
-                    android:id="@+id/switchConnectFit"
-                    style="@style/SettingsSwitch" />
-            </LinearLayout>
+<!--            <LinearLayout style="@style/AutoSyncRow">-->
+<!--                <LinearLayout style="@style/TextLayout">-->
+<!--                    <TextView style="@style/SettingTitle" android:text="Подключить Google Fit" />-->
+<!--                    <TextView style="@style/SettingSubtext" android:text="Нажмите для подключения" />-->
+<!--                </LinearLayout>-->
+<!--                <Switch-->
+<!--                    android:id="@+id/switchConnectFit"-->
+<!--                    style="@style/SettingsSwitch" />-->
+<!--            </LinearLayout>-->
 
-            <View style="@style/Divider" />
+<!--            <View style="@style/Divider" />-->
 
-            <LinearLayout style="@style/AutoSyncRow">
-                <LinearLayout style="@style/TextLayout">
-                    <TextView style="@style/SettingTitle" android:text="Автоматическая синхронизация" />
-                    <TextView style="@style/SettingSubtext" android:text="Включить автоматическое обновление" />
-                </LinearLayout>
-                <Switch
-                    android:id="@+id/switchAutoSync"
-                    style="@style/SettingsSwitch" />
-            </LinearLayout>
-        </LinearLayout>
+<!--            <LinearLayout style="@style/AutoSyncRow">-->
+<!--                <LinearLayout style="@style/TextLayout">-->
+<!--                    <TextView style="@style/SettingTitle" android:text="Автоматическая синхронизация" />-->
+<!--                    <TextView style="@style/SettingSubtext" android:text="Включить автоматическое обновление" />-->
+<!--                </LinearLayout>-->
+<!--                <Switch-->
+<!--                    android:id="@+id/switchAutoSync"-->
+<!--                    style="@style/SettingsSwitch" />-->
+<!--            </LinearLayout>-->
+<!--        </LinearLayout>-->
 
         <TextView
             style="@style/SectionHeaderWithTopMargin"
@@ -121,15 +121,6 @@
             style="@style/PrimaryButton"
             android:text="Сохранить настройки" />
 
-        <Button
-            android:id="@+id/btnSignOut"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Выйти из аккаунта"
-            android:layout_marginTop="16dp"
-            android:background="@color/divider_color"
-            android:textColor="@color/text_primary"
-            style="@style/PrimaryButton" />
 
     </LinearLayout>
 </ScrollView>

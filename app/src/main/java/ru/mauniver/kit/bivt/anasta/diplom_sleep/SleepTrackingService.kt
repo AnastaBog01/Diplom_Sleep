@@ -31,15 +31,15 @@ class SleepTrackingService : Service(), SensorEventListener {
     private lateinit var repository: SleepRepository
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private var audioFile: File? = null
 
-    // Микрофон
+    // Микрофон: редкие проверки
     private var micHandler: Handler? = null
     private var consecutiveSilentCount = 0
     private var firstSilentTime: Long? = null
-    private var sleepFixed = false      // спим ли (микрофон в режиме сна)
-    private var isListening = false
-    private var consecutiveAwakeCount = 0
-    private var possibleAwakeStartTime: Long? = null
+    private var isFastCheckMode = false
+    private var microphoneActive = false
 
     // Для усреднения за интервал (1 минута)
     private var motionSum = 0f
@@ -88,8 +88,7 @@ class SleepTrackingService : Service(), SensorEventListener {
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
         }
 
-        // Запускаем прослушивание для определения засыпания
-        startListeningForSleep()
+        startMicrophoneMonitoring()
 
         samplingRunnable = object : Runnable {
             override fun run() {
@@ -128,92 +127,92 @@ class SleepTrackingService : Service(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    // АЛГОРИТМ МИКРОФОНА
+    // ==================== МИКРОФОН ====================
 
-    private fun startListeningForSleep() {
-        if (sleepFixed) return
-        if (isListening) return
-        isListening = true
-        consecutiveSilentCount = 0
-        firstSilentTime = null
-        consecutiveAwakeCount = 0
-        possibleAwakeStartTime = null
-        scheduleNoiseCheck()
+    private fun startMicrophoneMonitoring() {
+        if (microphoneActive) return
+        microphoneActive = true
+        scheduleMicrophoneCheck(20 * 60 * 1000L) // первый раз через 20 минут
     }
 
-    private fun scheduleNoiseCheck() {
+    private fun scheduleMicrophoneCheck(delay: Long) {
         if (micHandler == null) {
             micHandler = Handler(Looper.getMainLooper())
         }
-        val interval = if (sleepFixed) 20 * 60 * 1000L else 60_000L
         micHandler?.postDelayed({
-            performNoiseCheck()
-        }, interval)
+            performMicrophoneCheck()
+        }, delay)
     }
 
-    private fun performNoiseCheck() {
+    private fun performMicrophoneCheck() {
+        if (!microphoneActive) return
+
         val noise = measureNoiseOnce()
         if (noise == null) {
-            scheduleNoiseCheck()
+            scheduleMicrophoneCheck(20 * 60 * 1000L)
             return
         }
+
         val isSilent = noise < NOISE_SLEEP_THRESHOLD
 
-        if (!sleepFixed) {
-            // Режим поиска засыпания
+        if (!isFastCheckMode) {
+            // Обычный режим (редкие проверки)
+            if (isSilent) {
+                // Обнаружена тишина → переходим в режим верификации
+                isFastCheckMode = true
+                consecutiveSilentCount = 1
+                firstSilentTime = System.currentTimeMillis()
+                scheduleMicrophoneCheck(3 * 60 * 1000L) // следующая проверка через 3 минуты
+            } else {
+                scheduleMicrophoneCheck(20 * 60 * 1000L)
+            }
+        } else {
+            // Режим верификации (часто)
             if (isSilent) {
                 consecutiveSilentCount++
-                if (consecutiveSilentCount == 1) firstSilentTime = System.currentTimeMillis()
                 if (consecutiveSilentCount >= 3 && !isAsleep) {
+                    // Три тихих проверки подряд – фиксируем засыпание
                     isAsleep = true
                     asleepStartTime = firstSilentTime ?: System.currentTimeMillis()
                     val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(asleepStartTime!!))
                     Log.d("SleepTracking", "Заснул в $timeStr (по микрофону)")
                     saveSleepStart(asleepStartTime!!)
-                    sleepFixed = true
-                    scheduleNoiseCheck()
+
+                    // После засыпания возвращаемся к редким проверкам
+                    isFastCheckMode = false
+                    consecutiveSilentCount = 0
+                    firstSilentTime = null
+                    scheduleMicrophoneCheck(20 * 60 * 1000L)
                     return
+                } else {
+                    scheduleMicrophoneCheck(3 * 60 * 1000L)
                 }
             } else {
+                // Шумно – сбрасываем верификацию, возвращаемся к редким проверкам
+                Log.d("SleepTracking", "Обнаружен шум, сброс верификации")
+                isFastCheckMode = false
                 consecutiveSilentCount = 0
                 firstSilentTime = null
+                scheduleMicrophoneCheck(20 * 60 * 1000L)
             }
-            scheduleNoiseCheck()
-        } else {
-            // Режим сна – ищем пробуждение
-            if (!isSilent) {
-                consecutiveAwakeCount++
-                if (consecutiveAwakeCount == 1) possibleAwakeStartTime = System.currentTimeMillis()
-                if (consecutiveAwakeCount >= 2 && isAsleep) {
-                    isAsleep = false
-                    sleepFixed = false
-                    val awakeTime = possibleAwakeStartTime ?: System.currentTimeMillis()
-                    val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(awakeTime))
-                    Log.d("SleepTracking", "Проснулся в $timeStr (по микрофону)")
-                    saveSleepEnd(awakeTime)
-                    startListeningForSleep()
-                    return
-                }
-            } else {
-                consecutiveAwakeCount = 0
-                possibleAwakeStartTime = null
-            }
-            scheduleNoiseCheck()
         }
     }
 
-
     private fun stopMicrophoneMonitoring() {
-        isListening = false
-        sleepFixed = false
+        microphoneActive = false
         micHandler?.removeCallbacksAndMessages(null)
         micHandler = null
+        isFastCheckMode = false
         consecutiveSilentCount = 0
         firstSilentTime = null
-        consecutiveAwakeCount = 0
-        possibleAwakeStartTime = null
+        mediaRecorder?.apply {
+            try { stop() } catch (_: Exception) {}
+            release()
+        }
+        mediaRecorder = null
+        audioFile?.delete()
+        audioFile = null
     }
-
 
     private fun measureNoiseOnce(): Float? {
         var recorder: MediaRecorder? = null
@@ -231,7 +230,6 @@ class SleepTrackingService : Service(), SensorEventListener {
             }
             val amplitude = recorder?.maxAmplitude?.toFloat() ?: 0f
             val normalized = (amplitude / 32768f).coerceIn(0f, 1f)
-            // Добавляем в общую статистику
             noiseSum += normalized
             noiseCount++
             normalized
@@ -247,10 +245,14 @@ class SleepTrackingService : Service(), SensorEventListener {
         }
     }
 
+    // АНАЛИЗ
+
     private fun finishCurrentInterval() {
         val now = System.currentTimeMillis()
         val avgMotion = if (motionCount > 0) motionSum / motionCount else 0f
         val avgNoise = if (noiseCount > 0) noiseSum / noiseCount else 0f
+
+        Log.d("SleepTracking", "Интервал: движение=$avgMotion, шум=$avgNoise, спим=$isAsleep")
 
         if (motionCount > 0 || noiseCount > 0) {
             samples.add(Sample(avgMotion, avgNoise, currentIntervalStart))
@@ -271,9 +273,13 @@ class SleepTrackingService : Service(), SensorEventListener {
     private fun analyzeSamples() {
         if (samples.size < maxOf(SLEEP_CONSECUTIVE_COUNT, AWAKE_CONSECUTIVE_COUNT)) return
 
+        val screenOn = isScreenOn()
+        val lastSamples = samples.takeLast(SLEEP_CONSECUTIVE_COUNT)
+        val motionAvg = lastSamples.map { it.motion }.average().toFloat()
+        val noiseAvg = lastSamples.map { it.noise }.average().toFloat()
+
         if (!isAsleep) {
-            val lastSamples = samples.takeLast(SLEEP_CONSECUTIVE_COUNT)
-            val allSleep = !isScreenOn() && lastSamples.all {
+            val allSleep = !screenOn && lastSamples.all {
                 it.motion < MOTION_SLEEP_THRESHOLD && it.noise < NOISE_SLEEP_THRESHOLD
             }
             if (allSleep) {
@@ -286,13 +292,14 @@ class SleepTrackingService : Service(), SensorEventListener {
         }
 
         if (isAsleep) {
-            val lastSamples = samples.takeLast(AWAKE_CONSECUTIVE_COUNT)
-            val allAwake = lastSamples.all {
+            val awakeSamples = samples.takeLast(AWAKE_CONSECUTIVE_COUNT)
+            val allAwake = awakeSamples.any {
                 it.motion > MOTION_AWAKE_THRESHOLD || it.noise > NOISE_AWAKE_THRESHOLD
-            }
+            } || screenOn
+
             if (allAwake) {
                 isAsleep = false
-                val awakeTime = lastSamples.first().time
+                val awakeTime = samples.last().time
                 val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(awakeTime))
                 Log.d("SleepTracking", "Проснулся в $timeStr")
                 saveSleepEnd(awakeTime)
@@ -326,12 +333,6 @@ class SleepTrackingService : Service(), SensorEventListener {
                 .apply()
         }
         prefs.edit().remove("sleep_start").apply()
-
-        // После пробуждения перезапускаем микрофон для следующего цикла
-        if (!isAsleep) {
-            sleepFixed = false
-            startListeningForSleep()
-        }
     }
 
     private fun createNotification(): Notification {

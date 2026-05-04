@@ -14,10 +14,7 @@ import android.widget.Button
 import android.widget.Switch
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.sleeptracker.R
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-//import com.google.firebase.auth.FirebaseAuth
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.receivers.NotificationReceiver
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity
 import java.util.Calendar
@@ -25,14 +22,13 @@ import java.util.Calendar
 class SettingsFragment : Fragment() {
 
     // UI элементы
-    private lateinit var switchConnectFit: Switch
-    private lateinit var switchAutoSync: Switch
+//    private lateinit var switchConnectFit: Switch
+//    private lateinit var switchAutoSync: Switch
     private lateinit var switchSleepReminder: Switch
     private lateinit var switchMorningSurvey: Switch
     private lateinit var btnSave: Button
     private lateinit var btnSleepReminderTime: Button
     private lateinit var btnMorningSurveyTime: Button
-    private lateinit var btnSignOut: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +36,7 @@ class SettingsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_settings, container, false)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,23 +48,22 @@ class SettingsFragment : Fragment() {
     }
 
     private fun initViews(view: View) {
-        switchConnectFit = view.findViewById(R.id.switchConnectFit)
-        switchAutoSync = view.findViewById(R.id.switchAutoSync)
+//        switchConnectFit = view.findViewById(R.id.switchConnectFit)
+//        switchAutoSync = view.findViewById(R.id.switchAutoSync)
         switchSleepReminder = view.findViewById(R.id.switchSleepReminder)
         switchMorningSurvey = view.findViewById(R.id.switchMorningSurvey)
         btnSave = view.findViewById(R.id.btnSave)
         btnSleepReminderTime = view.findViewById(R.id.btnSleepReminderTime)
         btnMorningSurveyTime = view.findViewById(R.id.btnMorningSurveyTime)
-        btnSignOut = view.findViewById(R.id.btnSignOut)
     }
 
     private fun setupListeners() {
         // Обработка переключателей Google Fit (пока заглушка)
-        switchConnectFit.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                // TODO: подключение к Google Fit
-            }
-        }
+//        switchConnectFit.setOnCheckedChangeListener { _, isChecked ->
+//            if (isChecked) {
+//                // TODO: подключение к Google Fit
+//            }
+//        }
 
         // Выбор времени для напоминания о сне
         btnSleepReminderTime.setOnClickListener {
@@ -97,10 +93,6 @@ class SettingsFragment : Fragment() {
             Toast.makeText(requireContext(), "Настройки сохранены", Toast.LENGTH_SHORT).show()
         }
 
-        // Кнопка выхода из Google-аккаунта
-//        btnSignOut.setOnClickListener {
-//            signOutFromGoogle()
-//        }
     }
 
     private fun showTimePicker(onTimeSelected: (String) -> Unit) {
@@ -133,8 +125,8 @@ class SettingsFragment : Fragment() {
     private fun saveSettings() {
         val prefs = requireContext().getSharedPreferences("app_settings", Context.MODE_PRIVATE)
         prefs.edit()
-            .putBoolean("switch_connect_fit", switchConnectFit.isChecked)
-            .putBoolean("switch_auto_sync", switchAutoSync.isChecked)
+//            .putBoolean("switch_connect_fit", switchConnectFit.isChecked)
+//            .putBoolean("switch_auto_sync", switchAutoSync.isChecked)
             .putBoolean("switch_sleep_reminder", switchSleepReminder.isChecked)
             .putBoolean("switch_morning_survey", switchMorningSurvey.isChecked)
             .apply()
@@ -164,8 +156,8 @@ class SettingsFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
         // Загружаем состояния переключателей
-        switchConnectFit.isChecked = prefs.getBoolean("switch_connect_fit", false)
-        switchAutoSync.isChecked = prefs.getBoolean("switch_auto_sync", false)
+//        switchConnectFit.isChecked = prefs.getBoolean("switch_connect_fit", false)
+//        switchAutoSync.isChecked = prefs.getBoolean("switch_auto_sync", false)
         switchSleepReminder.isChecked = prefs.getBoolean("switch_sleep_reminder", false)
         switchMorningSurvey.isChecked = prefs.getBoolean("switch_morning_survey", false)
 
@@ -249,30 +241,27 @@ class SettingsFragment : Fragment() {
         )
         alarmManager.cancel(pendingIntent)
     }
+    private fun scheduleDailyRecommendationNotification(time: String) {
+        scheduleDailyNotification(
+            channelId = "recommendation",
+            time = time,
+            title = "Совет дня",
+            text = getRandomRecommendation()
+        )
+    }
 
-//    private fun signOutFromGoogle() {
-//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//            .requestEmail()
-//            .build()
-//        val googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
-//
-//        googleSignInClient.signOut().addOnCompleteListener {
-//            // Выход из Firebase
-//            FirebaseAuth.getInstance().signOut()
-//
-//            // Сброс гостевого режима
-//            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-//            prefs.edit().remove("guest_mode").apply()
-//
-//            // Очистка настроек приложения
-//            val appPrefs = requireContext().getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-//            appPrefs.edit().clear().apply()
-//
-//            // Переход на экран входа
-//            val intent = Intent(requireContext(), WelcomeActivity::class.java)
-//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//            startActivity(intent)
-//            activity?.finish()
-//        }
-//    }
+    private fun getRandomRecommendation(): String {
+        val recommendations = listOf(
+            "Избегайте кофеина после 15:00",
+            "Заведите ритуал перед сном",
+            "Поддерживайте температуру в комнате 18-20°C",
+            "Ложитесь спать в одно и то же время",
+            "Проветривайте комнату перед сном",
+            "Откажитесь от гаджетов за час до сна",
+            "Прогулка перед сном улучшает качество сна",
+            "Не ешьте тяжелую пищу на ночь"
+        )
+        return recommendations.random()
+    }
+
 }
