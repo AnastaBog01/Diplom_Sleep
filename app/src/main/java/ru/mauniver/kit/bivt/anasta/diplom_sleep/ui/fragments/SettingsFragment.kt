@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.Switch
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.receivers.NotificationReceiver
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity
@@ -29,6 +30,8 @@ class SettingsFragment : Fragment() {
     private lateinit var btnSave: Button
     private lateinit var btnSleepReminderTime: Button
     private lateinit var btnMorningSurveyTime: Button
+    private lateinit var btnSignOut: Button
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,6 +58,8 @@ class SettingsFragment : Fragment() {
         btnSave = view.findViewById(R.id.btnSave)
         btnSleepReminderTime = view.findViewById(R.id.btnSleepReminderTime)
         btnMorningSurveyTime = view.findViewById(R.id.btnMorningSurveyTime)
+        btnSignOut = view.findViewById(R.id.btnSignOut)
+
     }
 
     private fun setupListeners() {
@@ -64,7 +69,13 @@ class SettingsFragment : Fragment() {
 //                // TODO: подключение к Google Fit
 //            }
 //        }
-
+        btnSignOut.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            prefs.edit().remove("guest_mode").apply()
+            startActivity(Intent(requireContext(), WelcomeActivity::class.java))
+            activity?.finish()
+        }
         // Выбор времени для напоминания о сне
         btnSleepReminderTime.setOnClickListener {
             showTimePicker { selectedTime ->

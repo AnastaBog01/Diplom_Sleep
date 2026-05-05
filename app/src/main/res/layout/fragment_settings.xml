@@ -113,6 +113,13 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:textColor="@color/primary_purple" />
             </LinearLayout>
+            <Button
+                android:id="@+id/btnSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выйти из аккаунта"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#D32F2F" />
 
         </LinearLayout>
 

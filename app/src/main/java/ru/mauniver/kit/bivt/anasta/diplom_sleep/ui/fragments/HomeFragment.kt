@@ -210,7 +210,9 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        handler.removeCallbacks(updateRunnable)
+        if (::updateRunnable.isInitialized) {
+            handler.removeCallbacks(updateRunnable)
+        }
     }
 
     override fun onResume() {
