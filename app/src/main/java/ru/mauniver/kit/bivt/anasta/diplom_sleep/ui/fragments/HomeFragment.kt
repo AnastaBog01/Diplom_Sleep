@@ -1,9 +1,8 @@
 package ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.fragments
 
-import android.app.AlertDialog
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,18 +14,18 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsRecord
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.google.android.gms.common.api.ApiException
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.R
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.SleepTrackerApplication
-import ru.mauniver.kit.bivt.anasta.diplom_sleep.managers.HealthConnectManager
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.managers.GoogleFitManager
+import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.WelcomeActivity
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.ui.dialogs.AddSleepRecordDialog
 import ru.mauniver.kit.bivt.anasta.diplom_sleep.utils.RecommendationEngine
 import java.text.SimpleDateFormat
@@ -37,24 +36,17 @@ class HomeFragment : Fragment() {
     private lateinit var tvSleepDuration: TextView
     private lateinit var tvSleepEfficiency: TextView
     private lateinit var tvBedtime: TextView
+    private lateinit var tvWakeTime: TextView
     private lateinit var llRecommendations: LinearLayout
     private lateinit var btnSyncData: Button
     private lateinit var cardAddRecord: CardView
     private lateinit var cardWeeklyAnalysis: CardView
-    private lateinit var tvWakeTime: TextView
 
-    private lateinit var healthConnectManager: HealthConnectManager
+    private lateinit var googleFitManager: GoogleFitManager
     private val handler = Handler(Looper.getMainLooper())
-    private lateinit var updateRunnable: Runnable
 
-    private val healthConnectPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            syncHealthConnectData()
-        } else {
-            Toast.makeText(requireContext(), "Разрешения не предоставлены", Toast.LENGTH_LONG).show()
-        }
+    private companion object {
+        private const val REQUEST_FIT_PERMISSIONS = 1002
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -69,23 +61,23 @@ class HomeFragment : Fragment() {
         loadRecommendations()
         loadLastSleepFromDb()
 
-        healthConnectManager = HealthConnectManager(requireContext())
+        googleFitManager = GoogleFitManager(requireActivity())
     }
 
     private fun initViews(view: View) {
         tvSleepDuration = view.findViewById(R.id.tvSleepDuration)
         tvSleepEfficiency = view.findViewById(R.id.tvSleepEfficiency)
         tvBedtime = view.findViewById(R.id.tvBedtime)
+        tvWakeTime = view.findViewById(R.id.tvWakeTime)
         btnSyncData = view.findViewById(R.id.btnSyncData)
         llRecommendations = view.findViewById(R.id.llRecommendations)
         cardAddRecord = view.findViewById(R.id.cardAddRecord)
         cardWeeklyAnalysis = view.findViewById(R.id.cardWeeklyAnalysis)
-        tvWakeTime = view.findViewById(R.id.tvWakeTime)
     }
 
     private fun setupClickListeners() {
         btnSyncData.setOnClickListener {
-            checkHealthConnectPermissions()
+            checkGoogleFitPermissions()
         }
         cardAddRecord.setOnClickListener {
             AddSleepRecordDialog.newInstance().show(parentFragmentManager, "AddSleepRecord")
@@ -95,61 +87,62 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun checkHealthConnectPermissions() {
-        try {
-            // Пробуем открыть Health Connect через стандартные настройки
-            val intent = Intent("android.settings.HEALTH_CONNECT_SETTINGS")
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Если не открылся – пробуем через Play Market
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.healthdata"))
-                startActivity(intent)
-                Toast.makeText(requireContext(), "Откройте Health Connect и дайте разрешения приложению", Toast.LENGTH_LONG).show()
-            } catch (e2: Exception) {
-                // Если Play Market не открылся – показываем инструкцию
-                showHealthConnectManualDialog()
+    private fun checkGoogleFitPermissions() {
+        val account = GoogleSignIn.getLastSignedInAccount(requireContext())
+        if (account == null) {
+            Toast.makeText(requireContext(), "Войдите в Google-аккаунт", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!googleFitManager.hasPermissions()) {
+            googleFitManager.requestPermissions(REQUEST_FIT_PERMISSIONS)
+        } else {
+            syncGoogleFitSleep()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_FIT_PERMISSIONS) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(requireContext(), "Разрешения получены ✓", Toast.LENGTH_SHORT).show()
+                syncGoogleFitSleep()
+            } else {
+                Toast.makeText(requireContext(), "Разрешения не предоставлены", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun showHealthConnectManualDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Как найти Health Connect")
-            .setMessage("1. Откройте Настройки → Приложения\n" +
-                    "2. Нажмите на значок ⋮ (три точки) → Показать системные приложения\n" +
-                    "3. Найдите Health Connect\n" +
-                    "4. Откройте его и дайте разрешение приложению на чтение сна и шагов")
-            .setPositiveButton("Понятно", null)
-            .show()
-    }
-
-    private fun syncHealthConnectData() {
-        lifecycleScope.launch {
+    private fun syncGoogleFitSleep() {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val steps = healthConnectManager.getStepsLast7Days()
-                // если хотим показывать шаги, нужно добавить TextView
-                // tvSteps.text = steps.toString()
+                val sleepData = googleFitManager.getLastSleepSession()
 
-                val sleep = healthConnectManager.getLastSleepSession()
-                if (sleep != null) {
-                    val startMillis = sleep.first.toEpochMilli()
-                    val endMillis = sleep.second.toEpochMilli()
-                    val durationHours = (endMillis - startMillis) / (1000f * 60 * 60)
-                    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                    tvBedtime.text = sdf.format(Date(startMillis))
-                    tvWakeTime.text = sdf.format(Date(endMillis))
-                    tvSleepDuration.text = String.format("%.1f ч", durationHours)
+                withContext(Dispatchers.Main) {
+                    if (sleepData != null) {
+                        val (startTime, endTime, durationMillis) = sleepData
 
-                    val efficiency = (durationHours / 8f * 100f).toInt().coerceIn(0, 100)
-                    tvSleepEfficiency.text = "$efficiency%"
+                        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-                    Toast.makeText(requireContext(), "Данные синхронизированы", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Нет данных о сне в Health Connect", Toast.LENGTH_SHORT).show()
+                        tvBedtime.text = sdf.format(Date(startTime))
+                        tvWakeTime.text = sdf.format(Date(endTime))
+
+                        val durationHours = durationMillis / (1000f * 60 * 60)
+                        tvSleepDuration.text = String.format("%.1f ч", durationHours)
+
+                        val efficiency = ((durationHours / 8f) * 100f).coerceIn(0f, 100f).toInt()
+                        tvSleepEfficiency.text = "$efficiency%"
+
+                        Toast.makeText(requireContext(), "✅ Данные сна загружены из Google Fit", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "Не найдено данных о сне за последние дни", Toast.LENGTH_LONG).show()
+                    }
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+                    Log.e("GoogleFit", "Sync failed", e)
+                }
             }
         }
     }
@@ -182,7 +175,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadRecommendations() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.Main) {
             if (!isAdded) return@launch
             val app = requireContext().applicationContext as SleepTrackerApplication
             val records = app.repository.getAllRecords()
@@ -208,12 +201,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        if (::updateRunnable.isInitialized) {
-            handler.removeCallbacks(updateRunnable)
-        }
-    }
 
     override fun onResume() {
         super.onResume()

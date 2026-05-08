@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "184283793137",
-    "project_id": "sieep-8fe51",
-    "storage_bucket": "sieep-8fe51.firebasestorage.app"
+    "project_number": "935347255988",
+    "project_id": "sleepsleep-cb6f7",
+    "storage_bucket": "sleepsleep-cb6f7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:184283793137:android:8593a177a0b91d20ddcb50",
+        "mobilesdk_app_id": "1:935347255988:android:7391646e06ec9ea379b5e1",
         "android_client_info": {
           "package_name": "ru.mauniver.kit.bivt.anasta.diplom_sleep"
         }
       },
       "oauth_client": [
         {
-          "client_id": "184283793137-flmvokpvdvurko2tge34gqddrp0hghpq.apps.googleusercontent.com",
+          "client_id": "935347255988-klh9l3s0irlplg0qq6lt1ejovnjvm4mg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.mauniver.kit.bivt.anasta.diplom_sleep",
+            "certificate_hash": "2793eacaa636704fa49c62a213f73852eeebaff2"
+          }
+        },
+        {
+          "client_id": "935347255988-36spkktih52juvicaogph4fs7vrnn2gi.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB5Bu0e0w6yvWigui7SpqK5LxRZ_X2iavc"
+          "current_key": "AIzaSyB40C4uxCb4dmcmtixFfvQeU-CiHVMdhUU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "184283793137-flmvokpvdvurko2tge34gqddrp0hghpq.apps.googleusercontent.com",
+              "client_id": "935347255988-36spkktih52juvicaogph4fs7vrnn2gi.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

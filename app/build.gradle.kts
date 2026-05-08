@@ -64,10 +64,10 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation ("androidx.health.connect:connect-client:1.1.0-alpha06")
+    implementation("com.google.android.gms:play-services-fitness:21.1.0")
 
     // Firebase Auth + Google Sign-In
     implementation("com.google.firebase:firebase-auth:23.0.0")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
     // MPAndroidChart for charts
 //    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
